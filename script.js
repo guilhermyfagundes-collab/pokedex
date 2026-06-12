@@ -19,9 +19,7 @@ const anteriorBtn = document.getElementById("anteriorBtn");
 const proximoBtn = document.getElementById("proximoBtn");
 
 const favoritosLista = document.getElementById("favoritosLista");
-
 const listaPokemon = document.getElementById("listaPokemon");
-
 const temaBtn = document.getElementById("temaBtn");
 
 const coresTipos = {
@@ -46,320 +44,202 @@ const coresTipos = {
 };
 
 async function carregarPokemon(idOuNome){
-
-    try{
-
-        const resposta = await fetch(
-            `https://pokeapi.co/api/v2/pokemon/${idOuNome}`
-        );
+    try {
+        // Mostra estado de carregamento antes de bater na API
+        pokemonNome.innerText = "Carregando...";
+        pokemonId.innerText = "---";
+        
+        const resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${idOuNome}`);
+        if(!resposta.ok) throw new Error();
 
         const pokemon = await resposta.json();
-
         pokemonAtual = pokemon.id;
-
         preencherPokemon(pokemon);
 
-    }catch{
-
+    } catch {
         alert("Pokémon não encontrado!");
-
+        pokemonNome.innerText = "Desconhecido";
+        pokemonImg.src = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
     }
-
 }
 
 function preencherPokemon(pokemon){
-
     pokemonNome.innerText = pokemon.name;
-
     pokemonId.innerText = pokemon.id;
 
-    pokemonImg.src =
-    pokemon.sprites.other["official-artwork"].front_default;
+    // Fallback de segurança se a imagem oficial falhar
+    pokemonImg.src = pokemon.sprites.other["official-artwork"].front_default || pokemon.sprites.front_default;
 
-    altura.innerText = pokemon.height;
-
-    peso.innerText = pokemon.weight;
+    // Formata altura e peso para o nosso sistema decimal básico (ex: 0.7m / 6.9kg)
+    altura.innerText = (pokemon.height / 10) + " m";
+    peso.innerText = (pokemon.weight / 10) + " kg";
 
     carregarTipos(pokemon);
-
     carregarHabilidades(pokemon);
-
     carregarStats(pokemon);
-
 }
 
-
 function carregarTipos(pokemon){
-
     tiposDiv.innerHTML = "";
-
     pokemon.types.forEach(tipo => {
-
         const span = document.createElement("span");
-
         span.classList.add("tipo");
-
         span.innerText = tipo.type.name;
-
-        span.style.background =
-        coresTipos[tipo.type.name];
-
+        span.style.background = coresTipos[tipo.type.name] || "#A8A878";
         tiposDiv.appendChild(span);
-
     });
-
 }
 
 function carregarHabilidades(pokemon){
-
     habilidadesUl.innerHTML = "";
-
     pokemon.abilities.forEach(habilidade => {
-
         const li = document.createElement("li");
-
-        li.innerText =
-        habilidade.ability.name;
-
+        li.innerText = habilidade.ability.name;
         habilidadesUl.appendChild(li);
-
     });
-
 }
 
 function carregarStats(pokemon){
-
     statsContainer.innerHTML = "";
-
     pokemon.stats.forEach(stat => {
-
         const div = document.createElement("div");
-
         div.classList.add("stat");
+
+        // Define dinamicamente a cor da barra baseado no valor
+        let corBarra = "#ff4d4d"; // Fraco (Vermelho)
+        if (stat.base_stat >= 50 && stat.base_stat < 90) corBarra = "#ffaa00"; // Médio (Laranja)
+        if (stat.base_stat >= 90) corBarra = "#2ecc71"; // Forte (Verde)
+
+        const porcentagem = Math.min(stat.base_stat, 100);
 
         div.innerHTML = `
             <div class="stat-info">
                 <span>${stat.stat.name}</span>
                 <span>${stat.base_stat}</span>
             </div>
-
             <div class="barra">
-                <div
-                    class="preenchimento"
-                    style="width:${stat.base_stat}%">
-                </div>
+                <div class="preenchimento" style="width:${porcentagem}%; background-color: ${corBarra}"></div>
             </div>
         `;
-
         statsContainer.appendChild(div);
-
     });
-
 }
 
 buscarBtn.addEventListener("click", () => {
-
-    const valor =
-    pokemonInput.value.toLowerCase();
-
-    carregarPokemon(valor);
-
+    const valor = pokemonInput.value.toLowerCase().trim();
+    if(valor) carregarPokemon(valor);
 });
 
 pokemonInput.addEventListener("keypress", e => {
-
     if(e.key === "Enter"){
-
         buscarBtn.click();
-
     }
-
 });
 
 proximoBtn.addEventListener("click", () => {
-
     pokemonAtual++;
-
     carregarPokemon(pokemonAtual);
-
 });
 
 anteriorBtn.addEventListener("click", () => {
-
     if(pokemonAtual > 1){
-
         pokemonAtual--;
-
         carregarPokemon(pokemonAtual);
-
     }
-
 });
 
-let favoritos =
-JSON.parse(
-localStorage.getItem("favoritos")
-) || [];
+let favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
 
 function criarBotaoFavorito(){
+    let botaoExistente = document.querySelector(".btn-favorito");
+    if(botaoExistente) botaoExistente.remove();
 
-    let botaoExistente =
-    document.querySelector(".btn-favorito");
-
-    if(botaoExistente){
-
-        botaoExistente.remove();
-
-    }
-
-    const botao =
-    document.createElement("button");
-
+    const botao = document.createElement("button");
     botao.classList.add("btn-favorito");
-
-    botao.innerText =
-    "⭐ Adicionar aos Favoritos";
+    botao.innerText = "⭐ Adicionar aos Favoritos";
 
     botao.addEventListener("click", () => {
-
         if(!favoritos.includes(pokemonAtual)){
-
             favoritos.push(pokemonAtual);
-
-            localStorage.setItem(
-                "favoritos",
-                JSON.stringify(favoritos)
-            );
-
+            localStorage.setItem("favoritos", JSON.stringify(favoritos));
             mostrarFavoritos();
-
         }
-
     });
 
-    document
-    .querySelector(".pokemon-card")
-    .appendChild(botao);
-
+    document.querySelector(".pokemon-card").appendChild(botao);
 }
 
 async function mostrarFavoritos(){
-
     favoritosLista.innerHTML = "";
-
     for(let id of favoritos){
+        try {
+            const resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+            const pokemon = await resposta.json();
 
-        const resposta = await fetch(
-            `https://pokeapi.co/api/v2/pokemon/${id}`
-        );
+            const div = document.createElement("div");
+            div.classList.add("favorito-card");
+            div.innerText = pokemon.name;
 
-        const pokemon =
-        await resposta.json();
+            div.addEventListener("click", () => {
+                carregarPokemon(id);
+            });
 
-        const div =
-        document.createElement("div");
-
-        div.classList.add("favorito-card");
-
-        div.innerText =
-        pokemon.name;
-
-        div.addEventListener("click", () => {
-
-            carregarPokemon(id);
-
-        });
-
-        favoritosLista.appendChild(div);
-
+            favoritosLista.appendChild(div);
+        } catch(e) {
+            console.error("Erro ao carregar favorito", e);
+        }
     }
-
 }
 
 async function carregarListaPokemon(){
-
     for(let i = 1; i <= 151; i++){
+        try {
+            const resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
+            const pokemon = await resposta.json();
 
-        const resposta = await fetch(
-            `https://pokeapi.co/api/v2/pokemon/${i}`
-        );
+            const card = document.createElement("div");
+            card.classList.add("pokemon-item");
 
-        const pokemon =
-        await resposta.json();
+            card.innerHTML = `
+                <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
+                <h4>${pokemon.name}</h4>
+                <p>#${pokemon.id}</p>
+            `;
 
-        const card =
-        document.createElement("div");
-
-        card.classList.add("pokemon-item");
-
-        card.innerHTML = `
-            <img src="${pokemon.sprites.front_default}">
-            <h4>${pokemon.name}</h4>
-            <p>#${pokemon.id}</p>
-        `;
-
-        card.addEventListener("click", () => {
-
-            carregarPokemon(i);
-
-            window.scrollTo({
-                top:0,
-                behavior:"smooth"
+            card.addEventListener("click", () => {
+                carregarPokemon(i);
+                window.scrollTo({ top: 0, behavior: "smooth" });
             });
 
-        });
-
-        listaPokemon.appendChild(card);
-
+            listaPokemon.appendChild(card);
+        } catch(e) {
+            console.error("Erro ao carregar lista", e);
+        }
     }
-
 }
 
+// Inicialização de Tema
 if(localStorage.getItem("tema") === "dark"){
-
     document.body.classList.add("dark");
-
-    temaBtn.innerText =
-    "☀️ Modo Claro";
-
+    temaBtn.innerText = "☀️ Modo Claro";
 }
 
 temaBtn.addEventListener("click", () => {
-
     document.body.classList.toggle("dark");
-
     if(document.body.classList.contains("dark")){
-
-        localStorage.setItem(
-            "tema",
-            "dark"
-        );
-
-        temaBtn.innerText =
-        "☀️ Modo Claro";
-
-    }else{
-
-        localStorage.setItem(
-            "tema",
-            "light"
-        );
-
-        temaBtn.innerText =
-        "🌙 Modo Escuro";
-
+        localStorage.setItem("tema", "dark");
+        temaBtn.innerText = "☀️ Modo Claro";
+    } else {
+        localStorage.setItem("tema", "light");
+        temaBtn.innerText = "🌙 Modo Escuro";
     }
-
 });
 
+// Inicializar a aplicação
 carregarPokemon(1);
-
 mostrarFavoritos();
-
 carregarListaPokemon();
 
 setTimeout(() => {
-
     criarBotaoFavorito();
-
 }, 1000);

@@ -6,25 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokédex Pro</title>
 
-    <!-- Arquivo CSS -->
     <link rel="stylesheet" href="style.css">
 
-    <!-- Ícones -->
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
 
-    <!-- Botão tema -->
     <button id="temaBtn">
         🌙 Modo Escuro
     </button>
 
-    <!-- Container principal -->
     <div class="container">
 
-        <!-- Cabeçalho -->
         <header>
             <h1>Pokédex</h1>
 
@@ -40,12 +34,11 @@
             </div>
         </header>
 
-        <!-- Card principal -->
         <section class="pokemon-card">
 
             <img
                 id="pokemonImg"
-                src=""
+                src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png"
                 alt="Pokemon">
 
             <h2 id="pokemonNome">
@@ -53,14 +46,11 @@
             </h2>
 
             <p>
-                Nº
-                <span id="pokemonId"></span>
+                Nº <span id="pokemonId">---</span>
             </p>
 
-            <!-- Tipos -->
             <div id="tipos"></div>
 
-            <!-- Informações -->
             <div class="informacoes">
 
                 <div class="info-box">
@@ -75,90 +65,17 @@
 
             </div>
 
-            <!-- Habilidades -->
             <div class="habilidades">
-
                 <h3>Habilidades</h3>
-
-                <ul id="habilidades">
-                </ul>
-
+                <ul id="habilidades"></ul>
             </div>
 
         </section>
 
-        <!-- Estatísticas -->
         <section class="stats">
-
             <h2>Estatísticas</h2>
-
-            <div id="statsContainer">
-
-            </div>
-
+            <div id="statsContainer"></div>
         </section>
 
-        <!-- Navegação -->
         <section class="navegacao">
-
-            <button id="anteriorBtn">
-                ⬅ Anterior
-            </button>
-
-            <button id="proximoBtn">
-                Próximo ➡
-            </button>
-
-        </section>
-
-        <!-- Favoritos -->
-        <section class="favoritos">
-
-            <h2>⭐ Favoritos</h2>
-
-            <div id="favoritosLista">
-
-            </div>
-
-        </section>
-
-        <!-- Lista dos Pokémon -->
-        <section class="lista-pokemon">
-
-            <h2>Lista Pokémon</h2>
-
-            <div id="listaPokemon">
-
-            </div>
-
-        </section>
-
-    </div>
-
-    <!-- Modal -->
-    <div id="modal" class="modal">
-
-        <div class="modal-content">
-
-            <span id="fecharModal">
-                &times;
-            </span>
-
-            <h2 id="modalNome"></h2>
-
-            <img id="modalImagem">
-
-            <div id="modalConteudo">
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- JavaScript -->
-    <script src="script.js"></script>
-
-</body>
-
-</html>
+            <button
